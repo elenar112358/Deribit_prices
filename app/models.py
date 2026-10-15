@@ -23,6 +23,10 @@ class Currency(Base):
         nullable=False,
     )
 
+    prices: Mapped[list["IndexPrice"]] = relationship(
+        back_populates="currency",
+    )
+
 
 class IndexPrice(Base):
     __tablename__ = "index_price"
