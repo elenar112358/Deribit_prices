@@ -1,17 +1,19 @@
 from fastapi import FastAPI, Response
 import uvicorn
 
+from app.api.v1.prices import router as prices_router
 
 app = FastAPI()
 
+app.include_router(prices_router, prefix="/api", tags=["Prices"])
 
-@app.get("/health")
-def check():
-    return Response(status_code=200)
+# @app.get("/health")
+# def check():
+#     return Response(status_code=200)
 
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="localhost", port=8000, reload=True)
+# if __name__ == "__main__":
+#     uvicorn.run("app.main:app", host="localhost", port=8000, reload=True)
 
 """
 docker run -d --name simple_sol_pgs \
@@ -28,5 +30,7 @@ curl --request GET \
 
 curl --request GET \
   --url "https://test.deribit.com/api/v2/public/get_index_price?index_name=btc_usd"
+  
+uvicorn app.main:app --reload
 
 """
