@@ -34,6 +34,7 @@
 | Python 3.14 | Основной язык |
 | FastAPI | REST API |
 | Uvicorn | ASGI-сервер |
+| aiohttp | Асинхронные HTTP-запросы к API биржи Deribit |
 | SQLAlchemy 2 | ORM и работа с базой данных |
 | PostgreSQL | Хранение данных |
 | Alembic | Миграции базы данных |
