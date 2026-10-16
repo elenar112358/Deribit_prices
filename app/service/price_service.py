@@ -1,7 +1,6 @@
 from datetime import date
 from decimal import Decimal
 
-import httpx
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -9,6 +8,8 @@ from app.database import SessionLocal
 from app.repository import currency_repository, price_repository
 from app.schemas import PricesResponse, PricesLineResponse
 
+import aiohttp
+import asyncio
 
 DERIBIT_URL = (
     "https://test.deribit.com/api/v2/public/get_index_price"
@@ -50,17 +51,13 @@ curl --request GET \
 """
 
 
-def fetch_index_price(
-        client: httpx.Client,
-        ticker: str,
-) -> tuple[Decimal, int]:
-    response = client.get(
-        DERIBIT_URL,
-        params={"index_name": ticker},
-    )
-    response.raise_for_status()
-
-    data = response.json()
+async def fetch_index_price(client: aiohttp.ClientSession, ticker: str) -> tuple[Decimal, int]:
+    async with client.get(
+            DERIBIT_URL,
+            params={"index_name": ticker},
+    ) as response:
+        response.raise_for_status()
+        data = await response.json()
 
     if "error" in data:
         raise RuntimeError(
@@ -73,12 +70,18 @@ def fetch_index_price(
     return price, timestamp
 
 
-def fetch_and_save_prices() -> None:
-    with httpx.Client(timeout=10.0) as client:
-        prices = {
-            ticker: fetch_index_price(client, ticker)
-            for ticker in TICKERS
-        }
+async def fetch_and_save_prices() -> None:
+    timeout = aiohttp.ClientTimeout(total=10)
+
+    async with aiohttp.ClientSession(timeout=timeout) as client:
+        results = await asyncio.gather(
+            *(
+                fetch_index_price(client, ticker)
+                for ticker in TICKERS
+            )
+        )
+
+    prices = dict(zip(TICKERS, results))
 
     with SessionLocal() as db:
         with db.begin():
@@ -102,6 +105,7 @@ def check_currency(db: Session, currency: str) -> bool:
             status_code=404,
             detail=f"Currency '{currency}' not found",
         )
+
 
 def get_prices(db: Session, currency: str) -> PricesLineResponse:
     check_currency(db, currency)

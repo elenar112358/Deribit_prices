@@ -4,9 +4,6 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from app.models import IndexPrice
-from app.schemas import PricesLineResponse
-
 from datetime import date, datetime, time, timedelta, timezone
 
 from app.models import Currency, IndexPrice

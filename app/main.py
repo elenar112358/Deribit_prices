@@ -1,19 +1,9 @@
-from fastapi import FastAPI, Response
-import uvicorn
-
+from fastapi import FastAPI
 from app.api.v1.prices import router as prices_router
 
 app = FastAPI()
 
 app.include_router(prices_router, prefix="/api", tags=["Prices"])
-
-# @app.get("/health")
-# def check():
-#     return Response(status_code=200)
-
-
-# if __name__ == "__main__":
-#     uvicorn.run("app.main:app", host="localhost", port=8000, reload=True)
 
 """
 docker run -d --name simple_sol_pgs \
