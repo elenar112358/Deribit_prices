@@ -1,7 +1,7 @@
 from app.schemas import PricesLineResponse
 
 
-def test_get_prices_unknown_currency(client):
+def test_get_prices_unknown_currency(client, saved_prices):
     response = client.get(
         "/api/prices/",
         params={"currency": "unknown_currency"},
@@ -24,7 +24,7 @@ def test_get_prices(client, saved_prices):
     }
 
 
-def test_get_last_price_unknown_currency(client):
+def test_get_last_price_unknown_currency(client, saved_prices):
     response = client.get(
         "/api/prices/",
         params={"currency": "unknown_currency"},
@@ -47,12 +47,52 @@ def test_get_last_price(client, saved_prices):
     }
 
 
-"""   
+def test_get_date_prices_unknown_currency(client, saved_prices):
+    response = client.get(
+        "/api/date_prices/",
+        params={
+            "currency": "unknown_currency",
+            "target_date": "2027-01-15",
+        },
+    )
 
-- обработка трех get api: "/prices/", "/last_price/", "/date_prices/":
--- при несуществующей валюте возвращается 404
--- возвращение корректных данных
+    assert response.status_code == 404
 
-docker compose -f compose.test.yml run --build --rm test pytest -v tests/test_prices_api.py
 
-"""
+def test_get_date_prices_right_date(client, saved_prices):
+    response = client.get(
+        "/api/date_prices/",
+        params={
+            "currency": "btc_usd",
+            "target_date": "2027-01-15",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {
+            "currency": "btc_usd",
+            "price": "65000.25",
+            "timestamp": 1_800_000_001,
+        },
+        {
+            "currency": "btc_usd",
+            "price": "65100.50",
+            "timestamp": 1_800_000_002,
+        },
+    ]
+
+
+def test_get_date_prices_wrong_date(client, saved_prices):
+    response = client.get(
+        "/api/date_prices/",
+        params={
+            "currency": "btc_usd",
+            "target_date": "2027-01-16",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+# docker compose -f compose.test.yml run --build --rm test pytest -v tests/test_prices_api.py
