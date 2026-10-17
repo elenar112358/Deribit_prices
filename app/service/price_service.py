@@ -1,5 +1,6 @@
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
@@ -51,7 +52,7 @@ curl --request GET \
 """
 
 
-async def fetch_index_price(client: aiohttp.ClientSession, ticker: str) -> tuple[Decimal, int]:
+async def fetch_index_price(client: aiohttp.ClientSession, ticker: str) -> dict[str, Any]:
     async with client.get(
             DERIBIT_URL,
             params={"index_name": ticker},
@@ -64,25 +65,37 @@ async def fetch_index_price(client: aiohttp.ClientSession, ticker: str) -> tuple
             f"Deribit API error for {ticker}: {data['error']}"
         )
 
+    return data
+
+
+def parse_price(data: dict[str, Any]) -> tuple[Decimal, int]:
     price = Decimal(str(data["result"]["index_price"]))
     timestamp = int(data["usIn"]) // 1_000_000
 
     return price, timestamp
 
 
-async def fetch_and_save_prices() -> None:
+async def get_parsed_price(client: aiohttp.ClientSession, ticker: str) -> tuple[Decimal, int]:
+    data = await fetch_index_price(client, ticker)
+
+    return parse_price(data)
+
+
+async def fetch_prices() -> dict[str, tuple[Decimal, int]]:
     timeout = aiohttp.ClientTimeout(total=10)
 
     async with aiohttp.ClientSession(timeout=timeout) as client:
         results = await asyncio.gather(
             *(
-                fetch_index_price(client, ticker)
+                get_parsed_price(client, ticker)
                 for ticker in TICKERS
             )
         )
 
-    prices = dict(zip(TICKERS, results))
+    return dict(zip(TICKERS, results))
 
+
+def save_prices(prices: dict[str, tuple[Decimal, int]]) -> None:
     with SessionLocal() as db:
         with db.begin():
             for ticker, (price, timestamp) in prices.items():
@@ -97,6 +110,11 @@ async def fetch_and_save_prices() -> None:
                     price=price,
                     timestamp=timestamp,
                 )
+
+
+async def fetch_and_save_prices() -> None:
+    prices = await fetch_prices()
+    save_prices(prices)
 
 
 def check_currency(db: Session, currency: str) -> bool:
