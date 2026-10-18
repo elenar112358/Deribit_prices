@@ -1,0 +1,8 @@
+# Shell-скрипты всегда используют LF
+*.sh text eol=lf
+
+# Python-файлы
+*.py text eol=lf
+
+# Markdown
+*.md text eol=lf

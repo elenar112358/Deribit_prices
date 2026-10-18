@@ -7,11 +7,17 @@ services:
       POSTGRES_PASSWORD: test_password
     ports:
       - "5433:5432"
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U test_user -d ss_test_db"]
+#      interval: 2s
+#      timeout: 5s
+#      retries: 10
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test_user -d ss_test_db"]
+      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -p 5432 -U test_user -d ss_test_db" ]
       interval: 2s
       timeout: 5s
       retries: 10
+      start_period: 5s
 
   test:
     build:
