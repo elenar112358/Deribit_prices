@@ -6,17 +6,17 @@ from uuid import UUID
 
 def test_currency_exists(db_session, saved_prices):
     assert currency_repository.currency_exists(db_session, ticker="btc_usd") == True
-    assert currency_repository.currency_exists(db_session, ticker="eth_usd") == False
+    assert currency_repository.currency_exists(db_session, ticker="unknown_currency") == False
 
 
 def test_get_currency_id(db_session, saved_prices):
     currency_id = saved_prices["currency_id"]
 
     assert currency_repository.get_currency_id(db_session, ticker="btc_usd") == currency_id
-    assert currency_repository.get_currency_id(db_session, ticker="eth_usd") is None
+    assert currency_repository.get_currency_id(db_session, ticker="unknown_currency") is None
 
 
-def test_create_currency(db_session, saved_prices):
+def test_create_currency(db_session):
     currency_id = currency_repository.create_currency(db_session, ticker="eth_usd")
 
     assert isinstance(currency_id, UUID)

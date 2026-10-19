@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 from app.models import IndexPrice
@@ -32,7 +33,6 @@ def test_create_index_price(db_session, saved_prices):
 def test_get_prices(db_session, saved_prices):
     prices = price_repository.get_prices(db_session, currency="btc_usd")
 
-
     assert isinstance(prices, PricesLineResponse)
     assert prices.currency == "btc_usd"
     assert prices.prices == [Decimal("65000.25"), Decimal("65100.50")]
@@ -47,13 +47,14 @@ def test_get_last_price(db_session, saved_prices):
     assert price.price == Decimal("65100.50")
     assert price.timestamp == 1_800_000_002
 
-    price = price_repository.get_last_price(db_session, currency="eth_usd")
+    price = price_repository.get_last_price(db_session, currency="unknown_currency")
 
     assert price is None
 
 
 def test_get_date_prices(db_session, saved_prices):
-    prices = price_repository.get_date_prices(db_session, target_date="2027-01-15", currency="btc_usd")
+    prices = price_repository.get_date_prices(db_session, target_date=date.fromisoformat("2027-01-15"),
+                                              currency="btc_usd")
 
     assert isinstance(prices, list)
     for price in prices:
@@ -69,25 +70,8 @@ def test_get_date_prices(db_session, saved_prices):
     assert prices[1].price == Decimal("65100.50")
     assert prices[1].timestamp == 1_800_000_002
 
-    prices = price_repository.get_date_prices(db_session, target_date="2027-01-16", currency="btc_usd")
+    prices = price_repository.get_date_prices(db_session, target_date=date.fromisoformat("2027-01-16"),
+                                              currency="btc_usd")
 
     assert isinstance(prices, list)
     assert len(prices) == 0
-
-
-"""   
-- обработка мок-ответа от биржи: 
--- парсинг цены (parse_price)
--- создание валюты в базе если ее не было (save_prices)
--- добавление новой цены для валюты (save_prices)
-
-- обработка трех get api: "/prices/", "/last_price/", "/date_prices/":
--- при несуществующей валюте возвращается 404
--- возвращение корректных данных
-
-- проверка price_service: check_currency, get_prices, get_last_price, get_date_prices
-
-- currency_repository: currency_exists, get_currency_id, create_currency
-
-- price_repository: create_index_price, get_prices, get_last_price, get_date_prices
-"""

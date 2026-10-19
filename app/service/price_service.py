@@ -117,7 +117,7 @@ async def fetch_and_save_prices() -> None:
     save_prices(prices)
 
 
-def check_currency(db: Session, currency: str) -> bool:
+def check_currency(db: Session, currency: str) -> None:
     if not currency_repository.currency_exists(db, currency):
         raise HTTPException(
             status_code=404,

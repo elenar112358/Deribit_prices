@@ -81,3 +81,28 @@ def saved_prices(db_session):
         "currency_id": currency.id,
         "ticker": currency.ticker,
     }
+
+
+@pytest.fixture
+def json_response():
+    return {
+        "jsonrpc": "2.0",
+        "result": {
+            "estimated_delivery_price": 82306.64,
+            "index_price": 82306.64
+        },
+        "usIn": 1792079447881029,
+        "usOut": 1792079447881337,
+        "usDiff": 308,
+        "testnet": True
+    }
+
+
+@pytest.fixture
+def fetched_prices():
+    data = {
+        "btc_usd": (Decimal("65103.71"), 1_800_000_003),
+        "eth_usd": (Decimal("80000.00"), 1_800_000_001),
+    }
+
+    return data
