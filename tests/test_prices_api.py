@@ -1,6 +1,3 @@
-from app.schemas import PricesLineResponse
-
-
 def test_get_prices_unknown_currency(client, saved_prices):
     response = client.get(
         "/api/prices/",

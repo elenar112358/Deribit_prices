@@ -1,7 +1,7 @@
 from typing import Generator
 
 import pytest
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from fastapi.testclient import TestClient
 
@@ -45,9 +45,6 @@ def client():
 
 @pytest.fixture(autouse=True)
 def setup_db():
-    # with test_engine.connect() as connection:
-    #     connection.execute(text("SELECT 1"))
-
     Base.metadata.create_all(bind=test_engine)
     yield
     Base.metadata.drop_all(bind=test_engine)
@@ -79,3 +76,8 @@ def saved_prices(db_session):
     ])
 
     db_session.commit()
+
+    return {
+        "currency_id": currency.id,
+        "ticker": currency.ticker,
+    }
