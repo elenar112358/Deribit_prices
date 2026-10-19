@@ -16,6 +16,10 @@ bash run_tests.sh
 docker compose -f compose.yml up --build -d
 ```
 
+### Проверить API
+
+http://localhost:8000/docs
+
 ## Содержание
 
 - [Возможности](#возможности)
